@@ -15,24 +15,24 @@ fn main() {
         env::set_current_dir(&base_dir).expect("Failed to change directory.");
 
         // Compile the Rust source file
-        Command::new("rustc")
+        let status = Command::new("rustc")
             .arg(format!("{}.rs", filename))
-            .arg("--out-dir")
-            .arg("dist")
-            .status()
-            .expect("Failed to compile Rust file.");
+            .arg("--out-dir").arg("dist").arg("--edition").arg("2021")
+            .status();
 
-        // Build the executable path
-        let executable = if cfg!(target_os = "windows") {
-            format!("dist/{}.exe", filename)
-        } else {
-            format!("dist/{}", filename)
-        };
+        if status.expect("REASON").success() {
+            // Build the executable path
+            let executable = if cfg!(target_os = "windows") {
+                format!("dist/{}.exe", filename)
+            } else {
+                format!("dist/{}", filename)
+            };
 
-        // Execute the compiled program
-        Command::new(executable)
-            .status()
-            .expect("Failed to execute compiled program.");
+            // Execute the compiled program
+            let _ = Command::new(executable)
+                .status()
+                .expect("Failed to execute compiled program");
+        }
     } else {
         println!("No file was chosen.");
     }
